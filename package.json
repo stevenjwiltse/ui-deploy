@@ -4,28 +4,40 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "npm i; vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
-    "node": "^18.20.6",
-    "npm": "^11.0.0",
+    "@emotion/react":"^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@fontsource/roboto": "^5.1.1",
+    "@fortawesome/fontawesome-svg-core": "6.7.2",
+    "@fortawesome/free-brands-svg-icons": "6.7.2",
+    "@fortawesome/free-regular-svg-icons": "6.7.2",
+    "@fortawesome/free-solid-svg-icons": "6.7.2",
+    "@fortawesome/react-fontawesome": "0.2.2",
+    "@mui/material": "6.4.4",
+    "@mui/icons-material": "6.4.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.18.0",
+    "@eslint/js": "^9.20.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.18.0",
+    "eslint": "^9.20.1",
+    "eslint-plugin-prettier": "5.2.3",
+    "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
-    "globals": "^15.14.0",
+    "eslint-plugin-unused-imports": "4.1.4",
+    "globals": "^15.15.0",
+    "prettier": "3.5.0",
     "typescript": "~5.7.2",
-    "typescript-eslint": "^8.20.0",
-    "vite": "^6.0.7"
+    "typescript-eslint": "^8.24.0",
+    "vite": "^6.1.0"
   }
 }
