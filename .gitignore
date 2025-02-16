@@ -23,7 +23,5 @@ dist-ssr
 *.sln
 *.sw?
 
-# Env
+# Environment
 .env
-.env[a-zA-z]*
-.env.[0-9]*
