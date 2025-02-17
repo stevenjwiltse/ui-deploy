@@ -1,9 +1,8 @@
 import * as React from 'react';
-import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import ProTip from './ProTip';
+import Navbar from './components/NavBar';
 
 function Copyright() {
   return (
@@ -15,8 +14,8 @@ function Copyright() {
       }}
     >
       {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
+      <Link color="inherit" href="#">
+        Main Street Barbershop
       </Link>{' '}
       {new Date().getFullYear()}.
     </Typography>
@@ -25,14 +24,14 @@ function Copyright() {
 
 export default function App() {
   return (
-    <Container maxWidth="sm">
+    <Box>
+      <Navbar />
       <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2 }}>
-          Material UI Vite.js example in TypeScript
+        <Typography variant="h4" component="h1" sx={{ mb: 2, textAlign: 'center' }}>
+          Some content
         </Typography>
-        <ProTip />
         <Copyright />
       </Box>
-    </Container>
+    </Box>
   );
 }
