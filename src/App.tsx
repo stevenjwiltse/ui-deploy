@@ -2,7 +2,7 @@ import * as React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Navbar from './components/NavBar';
+import Navbar from './components/Navbar';
 
 function Copyright() {
   return (
