@@ -3,6 +3,44 @@ import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import Navbar from './components/Navbar';
+import { useKeycloak } from './hooks/useKeycloak';
+import VideoBanner from './components/VideoBanner';
+import { Container, Stack } from '@mui/material';
+import ImageCarousel from './components/ImageCarousel';
+import AboutUs from './components/AboutUs';
+import Footer from './components/Footer';
+
+type CarouselImage = {
+  src: string;
+  alt: string;
+};
+
+const carouselImages: CarouselImage[] = [
+  {
+    src: "/img/carosel1.jpg",
+    alt: "barbershop",
+  },
+  {
+    src: "/img/carosel2.jpg",
+    alt: "barbershop",
+  },
+  {
+    src: "/img/carosel3.jpg",
+    alt: "barbershop",
+  },
+  {
+    src: "/img/carosel4.jpg",
+    alt: "barbershop",
+  },
+  {
+    src: "/img/carosel5.jpg",
+    alt: "barbershop",
+  },
+  {
+    src: "/img/carosel6.jpg",
+    alt: "barbershop",
+  },
+];
 
 function Copyright() {
   return (
@@ -23,15 +61,33 @@ function Copyright() {
 }
 
 export default function App() {
+  const { keycloak, authenticated } = useKeycloak();
+
   return (
     <Box>
       <Navbar />
-      <Box sx={{ my: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 2, textAlign: 'center' }}>
-          Some content
-        </Typography>
-        <Copyright />
+      <Box>
+        <VideoBanner />
+        <Container sx={{ mt: 4 }}>
+          <Typography variant="h3" component="h1" sx={{ mb: 2, textAlign: 'center' }} color="primary">
+            Main Street Barbershop
+          </Typography>
+          <Typography variant="body1" component="h1" sx={{ mb: 2, textAlign: 'center' }}>
+            We take pride in being the best barbershop in the city, delivering top-quality cuts and exceptional service.
+          </Typography>
+        </Container>
+        <ImageCarousel 
+          images={carouselImages}
+          height={400}
+          autoPlay={true}
+          autoPlayInterval={5000}
+        />
+        <AboutUs />
+        
       </Box>
+      <Footer
+        companyName='Main Street Barbershop'
+      />
     </Box>
   );
 }

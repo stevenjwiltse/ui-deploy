@@ -1,6 +1,7 @@
-import { AppBar, Button, Icon, styled, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Icon, styled, Toolbar, Typography } from "@mui/material";
 import ContentCutIcon from "@mui/icons-material/ContentCut";
 import MenuIcon from "@mui/icons-material/Menu";
+import { useKeycloak } from "../hooks/useKeycloak";
 
 const StyledToolbar = styled(Toolbar)({
   display: 'flex',
@@ -14,6 +15,17 @@ const Icons = styled('div')({
 
 
 const Navbar = () => {
+  const { keycloak, authenticated } = useKeycloak();
+
+  const handleLogin = () => {
+    keycloak?.login();
+  };
+
+  const handleLogout = () => {
+    keycloak?.logout();
+  };
+
+
   return (
     <AppBar position="sticky" sx={{ background: 'rgb(0, 0, 0)' }}>
       <StyledToolbar>
@@ -22,7 +34,11 @@ const Navbar = () => {
         </Icons>
         <Typography variant="h6" sx={{ display: { xs: "none", sm: "block" } }}>Barbershop UI</Typography>
         <ContentCutIcon sx={{ display: { xs: "block", sm: "none" } }} />
-        <Button color="inherit">Sign In</Button>
+        {authenticated ?
+          <Icons>
+            <Button color="inherit" onClick={handleLogout}>Sign Out</Button>
+          </Icons> :
+          <Button color="inherit" onClick={handleLogin}>Sign In</Button>}
       </StyledToolbar>
     </AppBar>
   )

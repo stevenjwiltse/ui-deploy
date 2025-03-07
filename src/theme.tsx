@@ -14,8 +14,23 @@ const theme = createTheme({
     error: {
       main: red.A400,
     },
+    text: {
+      secondary: grey[500],
+    },
     background: {
-      default: grey[300],
+      default: "hsla(215, 15%, 97%, 0.5)",
+    }
+  },
+  components: {
+    MuiOutlinedInput: {
+      styleOverrides: {
+        input: {
+          "&:-webkit-autofill": {
+            "-webkit-box-shadow": "0 0 0 100px var(--primary-weak) inset",
+            "-webkit-text-fill-color": "var(--text-primary)",
+          },
+        },
+      },
     },
   },
 });
