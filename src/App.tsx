@@ -9,6 +9,7 @@ import { Container, Stack } from '@mui/material';
 import ImageCarousel from './components/ImageCarousel';
 import AboutUs from './components/AboutUs';
 import Footer from './components/Footer';
+import Base from './pages/Base';
 
 type CarouselImage = {
   src: string;
@@ -61,11 +62,10 @@ function Copyright() {
 }
 
 export default function App() {
-  const { keycloak, authenticated } = useKeycloak();
+  
 
   return (
-    <Box>
-      <Navbar />
+    <Base children={
       <Box>
         <VideoBanner />
         <Container sx={{ mt: 4 }}>
@@ -76,18 +76,15 @@ export default function App() {
             We take pride in being the best barbershop in the city, delivering top-quality cuts and exceptional service.
           </Typography>
         </Container>
-        <ImageCarousel 
+        <ImageCarousel
           images={carouselImages}
           height={400}
           autoPlay={true}
           autoPlayInterval={5000}
         />
         <AboutUs />
-        
       </Box>
-      <Footer
-        companyName='Main Street Barbershop'
-      />
-    </Box>
+    }
+    />
   );
 }
