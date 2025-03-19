@@ -31,16 +31,21 @@ const Icons = styled("div")({
   alignItems: "center",
 });
 
+export type NavItemsType = {
+  name: string;
+  link: string;
+}
+
 interface Props {
   /**
    * Injected by the documentation to work in an iframe.
    * You won't need it on your project.
    */
   window?: () => Window;
+  navItems: NavItemsType[];
 }
 
 const drawerWidth = 240;
-const navItems = ["Home", "About", "Contact"];
 
 const Navbar = (props: Props) => {
   const { keycloak, authenticated } = useKeycloak();
@@ -79,10 +84,10 @@ const Navbar = (props: Props) => {
       </Typography>
       <Divider />
       <List>
-        {navItems.map((item) => (
-          <ListItem key={item} disablePadding>
-            <ListItemButton sx={{ textAlign: "center" }}>
-              <ListItemText primary={item} />
+        {props.navItems.map((item) => (
+          <ListItem key={item.name} disablePadding>
+            <ListItemButton sx={{ textAlign: "center" }} href={item.link}>
+              <ListItemText primary={item.name} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -117,9 +122,9 @@ const Navbar = (props: Props) => {
           >
           </Box>
           <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-            {navItems.map((item) => (
-              <Button key={item} sx={{ color: '#fff' }}>
-                {item}
+            {props.navItems.map((item) => (
+              <Button key={item.name} sx={{ color: '#fff' }} href={item.link}>
+                {item.name}
               </Button>
             ))}
           </Box>
