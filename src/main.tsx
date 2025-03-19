@@ -7,6 +7,7 @@ import App from './App';
 import { BrowserRouter, Route, Routes } from 'react-router';
 import Signup from './pages/Signup';
 import { KeycloakProvider } from './context/KeycloakContext';
+import Services from './pages/Services';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -16,6 +17,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <KeycloakProvider>
           <Routes>
             <Route index element= {<App />} />
+            <Route path="services" element= {<Services />} />
             <Route path="signup" element= {<Signup />} />
           </Routes>
         </KeycloakProvider>

@@ -2,14 +2,12 @@ import * as React from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Navbar from './components/Navbar';
-import { useKeycloak } from './hooks/useKeycloak';
 import VideoBanner from './components/VideoBanner';
-import { Container, Stack } from '@mui/material';
+import { Container } from '@mui/material';
 import ImageCarousel from './components/ImageCarousel';
 import AboutUs from './components/AboutUs';
-import Footer from './components/Footer';
 import Base from './pages/Base';
+import ServicesList from './components/ServicesList';
 
 type CarouselImage = {
   src: string;
@@ -83,6 +81,9 @@ export default function App() {
           autoPlayInterval={5000}
         />
         <AboutUs />
+        <Container sx={{ mt: 4 }}>
+          <ServicesList compact={true} maxItems={4} />
+        </Container>
       </Box>
     }
     />
