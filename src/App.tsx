@@ -81,9 +81,11 @@ export default function App() {
           autoPlayInterval={5000}
         />
         <AboutUs />
-        <Container sx={{ mt: 4 }}>
-          <ServicesList compact={true} maxItems={4} />
-        </Container>
+        <Box sx={{ mt: 4, backgroundColor: 'secondary.main'}}>
+          <Container >
+            <ServicesList compact={true} maxItems={4} />
+          </Container>
+        </Box>
       </Box>
     }
     />
