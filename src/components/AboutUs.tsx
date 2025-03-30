@@ -1,4 +1,5 @@
 import { Box, Container, Divider, Stack, Typography } from "@mui/material"
+import Base from "../pages/Base";
 
 const AboutUs = () => {
   return (

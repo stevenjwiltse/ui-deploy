@@ -23,13 +23,13 @@ export type AppointmentUpdate = {
     status?: AppointmentStatus | null;
 };
 
-export type BarberBase = {
+export type BarberCreate = {
     user_id: number;
 };
 
 export type BarberResponse = {
-    user_id: number;
     barber_id: number;
+    user: UserBase;
 };
 
 export type BodyLoginApiV1AuthLoginPost = {
@@ -65,27 +65,24 @@ export type MessageResponse = {
 
 export type ScheduleCreate = {
     barber_id: number;
-    appointment_id?: number | null;
     date: string;
-    startTime: string;
-    endTime: string;
+    is_working?: boolean | null;
+    time_slots: Array<TimeSlotCreate>;
 };
 
 export type ScheduleResponse = {
     barber_id: number;
-    appointment_id?: number | null;
     date: string;
-    startTime: string;
-    endTime: string;
+    is_working: boolean;
+    time_slots?: Array<TimeSlotChildResponse>;
     schedule_id: number;
+    barber: BarberResponse;
 };
 
 export type ScheduleUpdate = {
     barber_id?: number | null;
-    appointment_id?: number | null;
     date?: string | null;
-    startTime?: string | null;
-    endTime?: string | null;
+    is_working?: boolean | null;
 };
 
 export type ServiceBase = {
@@ -119,9 +116,31 @@ export type ThreadResponse = {
     messages?: Array<MessageResponse> | null;
 };
 
+export type TimeSlotChildResponse = {
+    slot_id: number;
+    start_time: string;
+    end_time: string;
+    is_available: boolean;
+};
+
+export type TimeSlotCreate = {
+    schedule_id?: number | null;
+    start_time: string;
+    end_time: string;
+    is_available?: boolean | null;
+};
+
 export type TokenResponse = {
     access_token: string;
     token_type?: string;
+};
+
+export type UserBase = {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    is_admin?: boolean;
 };
 
 export type UserCreate = {
@@ -372,7 +391,7 @@ export type GetAllBarbersApiV1BarbersGetResponses = {
 export type GetAllBarbersApiV1BarbersGetResponse = GetAllBarbersApiV1BarbersGetResponses[keyof GetAllBarbersApiV1BarbersGetResponses];
 
 export type CreateBarberApiV1BarbersPostData = {
-    body: BarberBase;
+    body: BarberCreate;
     path?: never;
     query?: never;
     url: '/api/v1/barbers';

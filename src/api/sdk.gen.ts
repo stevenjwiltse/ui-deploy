@@ -240,12 +240,6 @@ export const updateServiceApiV1ServicesServiceIdPut = <ThrowOnError extends bool
  */
 export const getSchedulesApiV1SchedulesGet = <ThrowOnError extends boolean = false>(options?: Options<GetSchedulesApiV1SchedulesGetData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetSchedulesApiV1SchedulesGetResponse, GetSchedulesApiV1SchedulesGetError, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
         url: '/api/v1/schedules',
         ...options
     });
@@ -292,12 +286,6 @@ export const deleteScheduleApiV1SchedulesScheduleIdDelete = <ThrowOnError extend
  */
 export const getScheduleApiV1SchedulesScheduleIdGet = <ThrowOnError extends boolean = false>(options: Options<GetScheduleApiV1SchedulesScheduleIdGetData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).get<GetScheduleApiV1SchedulesScheduleIdGetResponse, GetScheduleApiV1SchedulesScheduleIdGetError, ThrowOnError>({
-        security: [
-            {
-                scheme: 'bearer',
-                type: 'http'
-            }
-        ],
         url: '/api/v1/schedules/{schedule_id}',
         ...options
     });

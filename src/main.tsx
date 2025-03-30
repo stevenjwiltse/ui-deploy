@@ -10,6 +10,8 @@ import { KeycloakProvider } from './context/KeycloakContext';
 import Services from './pages/Services';
 import BarberSchedule from './pages/BarberSchedule';
 import ScheduleManagementPage from './pages/BarberScheduleList';
+import AboutUsPage from './pages/AboutUs';
+
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -19,10 +21,11 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <KeycloakProvider>
           <Routes>
             <Route index element= {<App />} />
+            <Route path="about" element= {<AboutUsPage />} />
             <Route path="services" element= {<Services />} />
             <Route path="signup" element= {<Signup />} />
-            <Route path="barbers/:barberId/schedules" element= {<ScheduleManagementPage />} />
-            <Route path="barbers/:barberId/schedules/new" element= {<BarberSchedule />} />
+            <Route path="schedules" element= {<ScheduleManagementPage />} />
+            <Route path="schedules/new" element= {<BarberSchedule />} />
           </Routes>
         </KeycloakProvider>
       </ThemeProvider>

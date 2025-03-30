@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -7,7 +7,6 @@ import {
   Button,
   Checkbox,
   FormControlLabel,
-  TextField,
   Alert,
   Snackbar,
   Container,
@@ -15,218 +14,319 @@ import {
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import Base from "./Base";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate } from "react-router";
+import { BarberResponse, createScheduleApiV1SchedulesPost, getAllBarbersApiV1BarbersGet } from "../api";
+import { useKeycloak } from "../hooks/useKeycloak";
 
 interface TimeSlot {
   id: string;
-  time: string;
+  timeDisplay: string;
+  startTime: string;
+  endTime: string;
   selected: boolean;
 }
 
 export default function BarberSchedule() {
-  // Get barber ID from URL params
-  const barberId = useParams().barberId;
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const { keycloak, authenticated } = useKeycloak();
+  if (!authenticated || !keycloak) {
+    // Redirect to Keycloak login if not authenticated
+    keycloak?.login({
+      redirectUri: window.location.origin + "/schedule/new",
+    });
+  } else {
 
-  const navigate = useNavigate();
 
-  // Generate time slots from 9am to 6pm with 30-minute intervals
-  const generateTimeSlots = (date: Date) => {
-    const slots: TimeSlot[] = [];
-    const startHour = 9;
-    const endHour = 18;
 
-    for (let hour = startHour; hour < endHour; hour++) {
-      // For each hour, create two 30-minute slots
-      ["00", "30"].forEach((minutes) => {
-        const timeString = `${hour === 12 ? 12 : hour % 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
-        slots.push({
-          id: `${hour}-${minutes}`,
-          time: timeString,
-          selected: false,
-        });
-      });
-    }
-
-    return slots;
-  };
-
-  // Handle date change
-  const handleDateChange = (date: Date | null) => {
-    setSelectedDate(date);
-    if (date) {
-      setTimeSlots(generateTimeSlots(date));
-    } else {
-      setTimeSlots([]);
-    }
-  };
-
-  // Toggle a time slot selection
-  const toggleTimeSlot = (id: string) => {
-    setTimeSlots(
-      timeSlots.map((slot) =>
-        slot.id === id ? { ...slot, selected: !slot.selected } : slot
-      )
+    const [barbers, setBarbers] = useState<BarberResponse[]>([]);
+    const [selectedBarber, setSelectedBarber] = useState<BarberResponse | null>(
+      null
     );
-  };
+    const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState("");
 
-  // Select all time slots
-  const selectAll = () => {
-    setTimeSlots(timeSlots.map((slot) => ({ ...slot, selected: true })));
-  };
+    const navigate = useNavigate();
 
-  // Deselect all time slots
-  const deselectAll = () => {
-    setTimeSlots(timeSlots.map((slot) => ({ ...slot, selected: false })));
-  };
-
-  // Submit schedule to API
-  const submitSchedule = async () => {
-    if (!selectedDate) {
-      setSnackbarMessage("Please select a date first.");
-      setSnackbarOpen(true);
-      return;
-    }
-
-    const selectedSlots = timeSlots.filter((slot) => slot.selected);
-    if (selectedSlots.length === 0) {
-      setSnackbarMessage("Please select at least one time slot.");
-      setSnackbarOpen(true);
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      // Format the data to send to the API
-      const scheduleData = {
-        date: selectedDate.toISOString().split("T")[0],
-        timeSlots: selectedSlots.map((slot) => slot.time),
+    // Fetch barbers from API
+    useEffect(() => {
+      const fetchBarbers = async () => {
+        try {
+          const { response, data, error } =
+            await getAllBarbersApiV1BarbersGet({
+              headers: {
+                "Authorization": `Bearer ${keycloak.token}`,
+              }
+            });
+          if (!response.ok) {
+            throw new Error(
+              error?.detail || "Failed to load services. Please try again later."
+            );
+          }
+          if (!data) {
+            throw new Error("Failed to load services. Please try again later.");
+          }
+          setBarbers(data);
+        } catch (err) {
+          console.error(err);
+          setSnackbarMessage("Failed to load barbers. Please try again later.");
+          setSnackbarOpen(true);
+        }
       };
+      fetchBarbers();
+    }, []);
 
-      // API call would go here
-      console.log("Submitting schedule:", scheduleData);
+    // Generate time slots from 9am to 6pm with 30-minute intervals
+    const generateTimeSlots = (date: Date) => {
+      const slots: TimeSlot[] = [];
+      const startHour = 9;
+      const endHour = 18;
 
-      // Mock API response
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      for (let hour = startHour; hour < endHour; hour++) {
+        // For each hour, create two 30-minute slots
+        ["00", "30"].forEach((minutes) => {
+          const timeString = `${hour === 12 ? 12 : hour % 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
+          const startTime = `${hour}:${minutes}`;
+          // Add 30 minutes to the start time to get the end time
+          const endTime = `${minutes === "30" ? hour + 1 : hour}:${minutes === "00" ? "30" : "00"}`;
+          slots.push({
+            id: `${hour}-${minutes}`,
+            timeDisplay: timeString,
+            startTime,
+            endTime,
+            selected: false,
+          });
+        });
+      }
 
-      setSnackbarMessage("Schedule created successfully!");
-      setSnackbarOpen(true);
+      return slots;
+    };
 
-      // Reset form after successful submission
-      setSelectedDate(null);
-      setTimeSlots([]);
-    } catch (error) {
-      setSnackbarMessage("Error creating schedule. Please try again.");
-      setSnackbarOpen(true);
-    } finally {
-      setIsLoading(false);
-      // Redirect to dashboard "schedules" page
-      navigate(`/barbers/${barberId}/schedules`);
-    }
-  };
+    // Handle date change
+    const handleDateChange = (date: Date | null) => {
+      setSelectedDate(date);
+      if (date) {
+        setTimeSlots(generateTimeSlots(date));
+      } else {
+        setTimeSlots([]);
+      }
+    };
 
-  return (
-    <Base
-      children={
-        <Container maxWidth="md" sx={{ py: 4 }}>
-          <Paper elevation={3} sx={{ p: 3 }}>
-            <Typography variant="h4" component="h1" gutterBottom align="center">
-              Barber Schedule Creator
-            </Typography>
+    // Toggle a time slot selection
+    const toggleTimeSlot = (id: string) => {
+      setTimeSlots(
+        timeSlots.map((slot) =>
+          slot.id === id ? { ...slot, selected: !slot.selected } : slot
+        )
+      );
+    };
 
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h6" gutterBottom>
-                1. Select Date
+    // Select all time slots
+    const selectAll = () => {
+      setTimeSlots(timeSlots.map((slot) => ({ ...slot, selected: true })));
+    };
+
+    // Deselect all time slots
+    const deselectAll = () => {
+      setTimeSlots(timeSlots.map((slot) => ({ ...slot, selected: false })));
+    };
+
+    // Submit schedule to API
+    const submitSchedule = async () => {
+      if (!selectedDate) {
+        setSnackbarMessage("Please select a date first.");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      if (!selectedBarber) {
+        setSnackbarMessage("Please select a barber first.");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      const selectedSlots = timeSlots.filter((slot) => slot.selected);
+      if (selectedSlots.length === 0) {
+        setSnackbarMessage("Please select at least one time slot.");
+        setSnackbarOpen(true);
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        // Format the data to send to the API
+        const scheduleData = {
+          barber_id: selectedBarber.barber_id,
+          date: selectedDate.toISOString().split("T")[0],
+          is_working: true,
+          time_slots: selectedSlots.map((slot) => {
+            return {
+              is_available: slot.selected,
+              start_time: slot.startTime,
+              end_time: slot.endTime,
+            };
+          }),
+        };
+
+        // API call would go here
+        console.log("Submitting schedule:", scheduleData);
+
+        const { data, error } = await createScheduleApiV1SchedulesPost({
+          body: scheduleData,
+          headers: {
+            "Authorization": `Bearer ${keycloak.token}`,
+          }
+        });
+        if (error) {
+          setSnackbarMessage("Error creating schedule. Please try again.");
+          setSnackbarOpen(true);
+          return;
+        }
+
+
+        setSnackbarMessage("Schedule created successfully!");
+        setSnackbarOpen(true);
+
+        // Reset form after successful submission
+        setSelectedDate(null);
+        setTimeSlots([]);
+      } catch (error) {
+        setSnackbarMessage("Error creating schedule. Please try again.");
+        setSnackbarOpen(true);
+      } finally {
+        setIsLoading(false);
+        // Redirect to dashboard "schedules" page
+        navigate(`/schedules`);
+      }
+    };
+
+    return (
+      <Base
+        children={
+          <Container maxWidth="md" sx={{ py: 4 }}>
+            <Paper elevation={3} sx={{ p: 3 }}>
+              <Typography variant="h4" component="h1" gutterBottom align="center">
+                Barber Schedule Creator
               </Typography>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="Schedule Date"
-                  value={selectedDate}
-                  onChange={handleDateChange}
-                  disablePast
-                />
-              </LocalizationProvider>
-            </Box>
 
-            {timeSlots.length > 0 && (
-              <>
-                <Box sx={{ mb: 2 }}>
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom>
+                  1. Select Date
+                </Typography>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <DatePicker
+                    label="Schedule Date"
+                    value={selectedDate}
+                    onChange={handleDateChange}
+                    disablePast
+                  />
+                </LocalizationProvider>
+              </Box>
+
+              {selectedDate && (
+                <Box sx={{ mb: 4 }}>
                   <Typography variant="h6" gutterBottom>
-                    2. Select Available Time Slots
+                    2. Select Barber
                   </Typography>
-                  <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
-                    <Button variant="outlined" onClick={selectAll}>
-                      Select All Slots
-                    </Button>
-                    <Button variant="outlined" onClick={deselectAll}>
-                      Deselect All Slots
-                    </Button>
-                  </Box>
-
                   <Grid container spacing={2}>
-                    {timeSlots.map((slot) => (
-                      <Grid item xs={6} sm={4} md={3} key={slot.id}>
+                    {barbers.map((barber) => (
+                      <Grid item xs={6} sm={4} md={3} key={barber.barber_id}>
                         <FormControlLabel
                           control={
                             <Checkbox
-                              checked={slot.selected}
-                              onChange={() => toggleTimeSlot(slot.id)}
+                              checked={selectedBarber?.barber_id === barber.barber_id}
+                              onChange={() =>
+                                setSelectedBarber(
+                                  selectedBarber?.barber_id === barber.barber_id ? null : barber
+                                )
+                              }
                             />
                           }
-                          label={slot.time}
-                          sx={{
-                            border: "1px solid #e0e0e0",
-                            borderRadius: 1,
-                            p: 1,
-                            width: "100%",
-                            bgcolor: slot.selected
-                              ? "primary.light"
-                              : "background.paper",
-                            color: slot.selected
-                              ? "primary.contrastText"
-                              : "text.primary",
-                          }}
+                          label={barber.user.firstName + " " + barber.user.lastName}
                         />
                       </Grid>
                     ))}
                   </Grid>
                 </Box>
+              )}
 
-                <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
-                  <Button
-                    variant="contained"
-                    size="large"
-                    onClick={submitSchedule}
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Creating Schedule..." : "Create Schedule"}
-                  </Button>
-                </Box>
-              </>
-            )}
-          </Paper>
+              {timeSlots.length > 0 && (
+                <>
+                  <Box sx={{ mb: 2 }}>
+                    <Typography variant="h6" gutterBottom>
+                      3. Select Available Time Slots
+                    </Typography>
+                    <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+                      <Button variant="outlined" onClick={selectAll}>
+                        Select All Slots
+                      </Button>
+                      <Button variant="outlined" onClick={deselectAll}>
+                        Deselect All Slots
+                      </Button>
+                    </Box>
 
-          <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={6000}
-            onClose={() => setSnackbarOpen(false)}
-          >
-            <Alert
+                    <Grid container spacing={2}>
+                      {timeSlots.map((slot) => (
+                        <Grid item xs={6} sm={4} md={3} key={slot.id}>
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={slot.selected}
+                                onChange={() => toggleTimeSlot(slot.id)}
+                              />
+                            }
+                            label={slot.timeDisplay}
+                            sx={{
+                              border: "1px solid #e0e0e0",
+                              borderRadius: 1,
+                              p: 1,
+                              width: "100%",
+                              bgcolor: slot.selected
+                                ? "primary.light"
+                                : "background.paper",
+                              color: slot.selected
+                                ? "primary.contrastText"
+                                : "text.primary",
+                            }}
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
+
+                  <Box sx={{ mt: 4, display: "flex", justifyContent: "center" }}>
+                    <Button
+                      variant="contained"
+                      size="large"
+                      onClick={submitSchedule}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Creating Schedule..." : "Create Schedule"}
+                    </Button>
+                  </Box>
+                </>
+              )}
+            </Paper>
+
+            <Snackbar
+              open={snackbarOpen}
+              autoHideDuration={6000}
               onClose={() => setSnackbarOpen(false)}
-              severity={
-                snackbarMessage.includes("successfully") ? "success" : "error"
-              }
             >
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
-        </Container>
-      }
-    />
-  );
+              <Alert
+                onClose={() => setSnackbarOpen(false)}
+                severity={
+                  snackbarMessage.includes("successfully") ? "success" : "error"
+                }
+              >
+                {snackbarMessage}
+              </Alert>
+            </Snackbar>
+          </Container>
+        }
+      />
+    );
+  }
 }
