@@ -11,6 +11,7 @@ import Services from './pages/Services';
 import BarberSchedule from './pages/BarberSchedule';
 import ScheduleManagementPage from './pages/BarberScheduleList';
 import AboutUsPage from './pages/AboutUs';
+import PrivateRoute from './PrivateRoute';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -20,12 +21,13 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <CssBaseline />
         <KeycloakProvider>
           <Routes>
-            <Route index element= {<App />} />
-            <Route path="about" element= {<AboutUsPage />} />
-            <Route path="services" element= {<Services />} />
-            <Route path="signup" element= {<Signup />} />
-            <Route path="schedules" element= {<ScheduleManagementPage />} />
-            <Route path="schedules/new" element= {<BarberSchedule />} />
+            <Route index element={<App />} />
+            <Route path="about" element={<AboutUsPage />} />
+            <Route path="services" element={<Services />} />
+            <Route path="signup" element={<Signup />} />
+            <Route path="schedules" element={<PrivateRoute roles={[]} children={<ScheduleManagementPage />} />} />
+            <Route path="schedules/new" element={<BarberSchedule />} />
+            <Route path="schedules/:scheduleId" element={<PrivateRoute roles={[]} children={<BarberSchedule />} />} />
           </Routes>
         </KeycloakProvider>
       </ThemeProvider>

@@ -37,6 +37,12 @@ export type BodyLoginApiV1AuthLoginPost = {
     password: string;
 };
 
+export type EmailSchema = {
+    email: string;
+    subject: string;
+    body: string;
+};
+
 export type ErrorResponse = {
     detail: string;
 };
@@ -74,7 +80,7 @@ export type ScheduleResponse = {
     barber_id: number;
     date: string;
     is_working: boolean;
-    time_slots?: Array<TimeSlotChildResponse>;
+    time_slots: Array<TimeSlotChildResponse>;
     schedule_id: number;
     barber: BarberResponse;
 };
@@ -199,6 +205,33 @@ export type LoginApiV1AuthLoginPostResponses = {
 };
 
 export type LoginApiV1AuthLoginPostResponse = LoginApiV1AuthLoginPostResponses[keyof LoginApiV1AuthLoginPostResponses];
+
+export type SendEmailApiV1EmailSendPostData = {
+    body: EmailSchema;
+    path?: never;
+    query?: never;
+    url: '/api/v1/email/send';
+};
+
+export type SendEmailApiV1EmailSendPostErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * An error occurred while sending the email.
+     */
+    500: ErrorResponse;
+};
+
+export type SendEmailApiV1EmailSendPostError = SendEmailApiV1EmailSendPostErrors[keyof SendEmailApiV1EmailSendPostErrors];
+
+export type SendEmailApiV1EmailSendPostResponses = {
+    /**
+     * Email has been sent successfully.
+     */
+    200: unknown;
+};
 
 export type GetUsersApiV1UsersGetData = {
     body?: never;
