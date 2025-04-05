@@ -36,7 +36,6 @@ import EventIcon from "@mui/icons-material/Event";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import SearchIcon from "@mui/icons-material/Search";
-import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import {
   format,
@@ -479,20 +478,11 @@ export default function ScheduleManagementPage() {
                             </TableCell>
                             <TableCell>
                               <Box sx={{ display: "flex", gap: 1 }}>
-                                <Tooltip title="View Details">
-                                  <IconButton
-                                    size="small"
-                                    color="primary"
-                                    href={`/schedules/${schedule.id}`}
-                                  >
-                                    <ArrowForwardIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
                                 <Tooltip title="Edit Schedule">
                                   <IconButton
                                     size="small"
                                     color="primary"
-                                    href={`/edit-schedule/${schedule.id}`}
+                                    href={`/schedules/${schedule.id}`}
                                   >
                                     <EditIcon fontSize="small" />
                                   </IconButton>

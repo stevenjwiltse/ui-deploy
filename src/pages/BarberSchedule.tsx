@@ -27,7 +27,7 @@ interface TimeSlot {
 }
 
 export default function BarberSchedule() {
-  const { keycloak, authenticated } = useKeycloak();
+  const { keycloak } = useKeycloak();
   if (!keycloak) {
     // Keycloak is not initialized yet, return null or a loading spinner
     return <div>Loading...</div>;
@@ -94,24 +94,21 @@ export default function BarberSchedule() {
         setExistingSchedule(data);
         setSelectedDate(new Date(data.date));
         setSelectedBarber(data.barber);
-        setTimeSlots(
-          data.time_slots.map((slot) => {
-            // Format the time display
-            // start_time format is "HH:mm:ss"
-            const hour = parseInt(slot.start_time.split(":")[0]);
-            const minutes = slot.start_time.split(":")[1];
-            // Convert to 12-hour format
-            const timeString = `${hour === 12 ? 12 : hour % 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
-            return {
-              id: slot.slot_id,
-              timeDisplay: timeString,
-              startTime: slot.start_time,
-              endTime: slot.end_time,
-              selected: slot.is_available,
+        const timeSlots = generateTimeSlots(new Date(data.date));
+        // Update time slots based on the existing schedule
+        for (const slot of data.time_slots) {
+          const hour = parseInt(slot.start_time.split(":")[0]);
+          const minutes = slot.start_time.split(":")[1];
+          const timeString = `${hour === 12 ? 12 : hour % 12}:${minutes} ${hour >= 12 ? "PM" : "AM"}`;
+          for (const timeSlot of timeSlots) {
+            if (timeSlot.timeDisplay === timeString) {
+              timeSlot.id = slot.slot_id;
+              timeSlot.selected = slot.is_available;
             }
-            
-          })
-        );
+          }
+        }
+        // Set the time slots state
+        setTimeSlots(timeSlots);
       } catch (err) {
         console.error(err);
         setSnackbarMessage("Failed to load schedule. Please try again later.");
@@ -120,9 +117,7 @@ export default function BarberSchedule() {
     };
     fetchSchedule();
 
-    if (!scheduleId) {
-      fetchBarbers();
-    }
+    fetchBarbers();
   }, [scheduleId, keycloak.token]);
 
   // Generate time slots from 9am to 6pm with 30-minute intervals
@@ -163,6 +158,7 @@ export default function BarberSchedule() {
 
   // Toggle a time slot selection
   const toggleTimeSlot = (id: number) => {
+    console.log("Toggling time slot with id:", id);
     setTimeSlots(
       timeSlots.map((slot) =>
         slot.id === id ? { ...slot, selected: !slot.selected } : slot
@@ -209,7 +205,9 @@ export default function BarberSchedule() {
         barber_id: selectedBarber.barber_id,
         date: selectedDate.toISOString().split("T")[0],
         is_working: true,
-        time_slots: selectedSlots.map((slot) => {
+        time_slots: timeSlots.map((slot) => {
+          console.log("Slot ID:", slot.id);
+          console.log("Slot selected:", slot.selected);
           return {
             slot_id: existingSchedule ? slot.id : undefined,
             is_available: slot.selected,
@@ -252,10 +250,6 @@ export default function BarberSchedule() {
           "Schedule updated successfully!" :
           "Schedule created successfully!");
       setSnackbarOpen(true);
-
-      // Reset form after successful submission
-      setSelectedDate(null);
-      setTimeSlots([]);
     } catch (error) {
       setSnackbarMessage("Error creating schedule. Please try again.");
       setSnackbarOpen(true);
@@ -270,6 +264,11 @@ export default function BarberSchedule() {
     <Base
       children={
         <Container maxWidth="md" sx={{ py: 4 }}>
+          <Box sx={{ mb: 2 }}>
+            <Button variant="outlined" onClick={() => navigate("/schedules")}>
+              Back to Schedules
+            </Button>
+          </Box>
           <Paper elevation={3} sx={{ p: 3 }}>
             <Typography variant="h4" component="h1" gutterBottom align="center">
               Barber Schedule Creator
