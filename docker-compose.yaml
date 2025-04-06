@@ -12,6 +12,5 @@ services:
     command: "npm run dev"
 
 networks:
-  default:
-    name: barber-shop-network
+  barber-shop-network:
     external: true

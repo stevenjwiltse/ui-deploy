@@ -50,7 +50,7 @@ const Footer: React.FC<FooterProps> = ({
       component="footer"
       sx={{
         py: 6,
-        mt: '20px',
+        // mt: '20px',
         background: 'rgb(0, 0, 0)',
       }}
     >
