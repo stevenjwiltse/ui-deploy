@@ -26,7 +26,7 @@ const VideoBanner = () => {
         >
           Sharp Cuts, Fresh Looks - Where Style Begins!
         </Typography>
-        <Button size="large" variant="contained" color="primary" sx={{
+        <Button size="large" variant="contained" color="primary" href="/book-appointment" sx={{
           maxWidth: "200px",
         }}>
           Book Now

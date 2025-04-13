@@ -10,6 +10,9 @@ type BaseProps = {
 
 export default function Base({ children }: BaseProps) {
   const { keycloak, authenticated } = useKeycloak();
+  if (!keycloak) {
+    return null; // or handle loading state
+  }
   const navItems: NavItemsType[] = [
     {
       name: "Home",
@@ -25,19 +28,25 @@ export default function Base({ children }: BaseProps) {
       link: "/services",
     },
   ];
-  const authenticatedNavItems: NavItemsType[] = [
+  const isBarber = keycloak.hasRealmRole("barber")
+  const barberNavItems: NavItemsType[] = [
     {
       name: "Schedules",
       link: "/schedules",
     },
   ];
-  if (authenticated) {
-    navItems.push(...authenticatedNavItems);
+  if (isBarber) {
+    navItems.push(...barberNavItems);
   }
   return (
-    <Box>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh", // Full viewport height
+      }}>
       <Navbar navItems={navItems} />
-      <Box>
+      <Box sx={{ flexGrow: 1 }}>
         {children}
       </Box>
       <Footer />
