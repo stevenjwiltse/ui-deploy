@@ -3,15 +3,19 @@
 export type AppointmentCreate = {
     user_id: number;
     barber_id: number;
-    schedule_id: number;
     status: AppointmentStatus;
+    time_slot: Array<number>;
+    service_id: Array<number>;
 };
 
 export type AppointmentResponse = {
     appointment_id: number;
-    user_id: number;
-    barber_id: number;
+    appointment_date: string;
+    user: UserResponse;
+    barber: BarberResponse;
     status: AppointmentStatus;
+    time_slots: Array<TimeSlotChildResponse>;
+    services: Array<ServiceResponse>;
 };
 
 export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancelled';
@@ -19,8 +23,9 @@ export type AppointmentStatus = 'pending' | 'confirmed' | 'completed' | 'cancell
 export type AppointmentUpdate = {
     user_id?: number | null;
     barber_id?: number | null;
-    schedule_id?: number | null;
     status?: AppointmentStatus | null;
+    time_slot?: Array<number> | null;
+    service_id?: Array<number> | null;
 };
 
 export type BarberCreate = {
@@ -89,25 +94,35 @@ export type ScheduleUpdate = {
     barber_id?: number | null;
     date?: string | null;
     is_working?: boolean | null;
+    time_slots?: Array<TimeSlotUpdate> | null;
 };
 
 export type ServiceBase = {
     name: string;
-    duration: string;
+    duration: number;
     price: number | string;
+    category: string;
+    description: string;
+    popularity_score: number;
 };
 
 export type ServiceResponse = {
     name: string;
-    duration: string;
+    duration: number;
     price: string;
+    category: string;
+    description: string;
+    popularity_score: number;
     service_id: number;
 };
 
 export type ServiceUpdate = {
     name?: string | null;
-    duration?: string | null;
+    duration?: number | null;
     price?: number | string;
+    category?: string | null;
+    description?: string | null;
+    popularity_score?: string | null;
 };
 
 export type ThreadCreate = {
@@ -127,12 +142,21 @@ export type TimeSlotChildResponse = {
     start_time: string;
     end_time: string;
     is_available: boolean;
+    is_booked: boolean;
 };
 
 export type TimeSlotCreate = {
     schedule_id?: number | null;
     start_time: string;
     end_time: string;
+    is_available?: boolean | null;
+};
+
+export type TimeSlotUpdate = {
+    slot_id: number;
+    schedule_id?: number | null;
+    start_time?: string | null;
+    end_time?: string | null;
     is_available?: boolean | null;
 };
 
@@ -165,6 +189,7 @@ export type UserResponse = {
     phoneNumber: string;
     is_admin?: boolean;
     user_id: number;
+    roles?: Array<string> | null;
 };
 
 export type UserUpdate = {
@@ -236,11 +261,18 @@ export type SendEmailApiV1EmailSendPostResponses = {
 export type GetUsersApiV1UsersGetData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+    };
     url: '/api/v1/users';
 };
 
 export type GetUsersApiV1UsersGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
     /**
      * Internal Server Error
      */
@@ -290,6 +322,35 @@ export type CreateUserApiV1UsersPostResponses = {
 };
 
 export type CreateUserApiV1UsersPostResponse = CreateUserApiV1UsersPostResponses[keyof CreateUserApiV1UsersPostResponses];
+
+export type GetCurrentUserApiV1UsersMeGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/users/me';
+};
+
+export type GetCurrentUserApiV1UsersMeGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorResponse;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorResponse;
+};
+
+export type GetCurrentUserApiV1UsersMeGetError = GetCurrentUserApiV1UsersMeGetErrors[keyof GetCurrentUserApiV1UsersMeGetErrors];
+
+export type GetCurrentUserApiV1UsersMeGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: UserResponse;
+};
+
+export type GetCurrentUserApiV1UsersMeGetResponse = GetCurrentUserApiV1UsersMeGetResponses[keyof GetCurrentUserApiV1UsersMeGetResponses];
 
 export type DeleteUserApiV1UsersUserIdDeleteData = {
     body?: never;
@@ -401,11 +462,22 @@ export type UpdateUserApiV1UsersUserIdPutResponse = UpdateUserApiV1UsersUserIdPu
 export type GetAllBarbersApiV1BarbersGetData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+        /**
+         * Date to filter barbers by schedule
+         */
+        schedule_date?: string | null;
+    };
     url: '/api/v1/barbers';
 };
 
 export type GetAllBarbersApiV1BarbersGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
     /**
      * Internal Server Error
      */
@@ -490,11 +562,18 @@ export type GetBarberByIdApiV1BarbersBarberIdGetResponse = GetBarberByIdApiV1Bar
 export type GetAllServicesApiV1ServicesGetData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+    };
     url: '/api/v1/services';
 };
 
 export type GetAllServicesApiV1ServicesGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
     /**
      * Internal Server Error
      */
@@ -616,11 +695,26 @@ export type UpdateServiceApiV1ServicesServiceIdPutResponse = UpdateServiceApiV1S
 export type GetSchedulesApiV1SchedulesGetData = {
     body?: never;
     path?: never;
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+        /**
+         * Date to filter barbers by schedule
+         */
+        schedule_date?: string | null;
+        /**
+         * Barber ID to filter schedules by
+         */
+        barber_id?: number | null;
+    };
     url: '/api/v1/schedules';
 };
 
 export type GetSchedulesApiV1SchedulesGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
     /**
      * Internal Server Error
      */
@@ -777,11 +871,18 @@ export type UpdateScheduleApiV1SchedulesScheduleIdPutResponse = UpdateScheduleAp
 export type GetAppointmentsApiV1AppointmentsGetData = {
     body?: never;
     path?: never;
-    query?: never;
+    query: {
+        page: number;
+        limit: number;
+    };
     url: '/api/v1/appointments';
 };
 
 export type GetAppointmentsApiV1AppointmentsGetErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
     /**
      * Internal Server Error
      */
@@ -974,7 +1075,10 @@ export type GetThreadsByUserIdApiV1ThreadsLoggedUserIdAndOtherUserIdGetData = {
         logged_user_id: number;
         other_user_id: number;
     };
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+    };
     url: '/api/v1/threads/{logged_user_id}/and/{other_user_id}';
 };
 
@@ -1013,7 +1117,10 @@ export type GetAllThreadsByUserIdApiV1ThreadsUserIdGetData = {
     path: {
         user_id: number;
     };
-    query?: never;
+    query?: {
+        page?: number;
+        limit?: number;
+    };
     url: '/api/v1/threads/{user_id}';
 };
 

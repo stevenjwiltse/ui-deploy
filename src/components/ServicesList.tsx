@@ -74,7 +74,7 @@ const ServicesList: React.FC<ServicesProps> = ({
           await getAllServicesApiV1ServicesGet();
         if (!response.ok) {
           throw new Error(
-            error?.detail || "Failed to load services. Please try again later."
+            "Failed to load services. Please try again later."
           );
         }
         if (!data) {
@@ -86,7 +86,7 @@ const ServicesList: React.FC<ServicesProps> = ({
           services.push({
             service_id: service.service_id,
             name: service.name,
-            duration: parseInt(service.duration.split(":")[1]),
+            duration: service.duration,
             price: parseFloat(service.price),
           });
         }

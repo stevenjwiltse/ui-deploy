@@ -57,7 +57,7 @@ export default function BarberSchedule() {
           });
         if (!response.ok) {
           throw new Error(
-            error?.detail || "Failed to load services. Please try again later."
+            "Failed to load services. Please try again later."
           );
         }
         if (!data) {
@@ -206,10 +206,8 @@ export default function BarberSchedule() {
         date: selectedDate.toISOString().split("T")[0],
         is_working: true,
         time_slots: timeSlots.map((slot) => {
-          console.log("Slot ID:", slot.id);
-          console.log("Slot selected:", slot.selected);
           return {
-            slot_id: existingSchedule ? slot.id : undefined,
+            slot_id: slot.id,
             is_available: slot.selected,
             start_time: slot.startTime,
             end_time: slot.endTime,
