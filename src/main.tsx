@@ -14,6 +14,7 @@ import AboutUsPage from './pages/AboutUs';
 import PrivateRoute from './PrivateRoute';
 import Booking from './pages/Booking';
 import AppointmentConfirmation from './pages/AppointmentConfirmation';
+import Messaging from './pages/Messaging';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -32,6 +33,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <Route path="schedules" element={<PrivateRoute roles={["barber"]} children={<ScheduleManagementPage />} />} />
             <Route path="schedules/new" element={<PrivateRoute roles={["barber"]} children={<BarberSchedule />} />} />
             <Route path="schedules/:scheduleId" element={<PrivateRoute roles={["barber"]} children={<BarberSchedule />} />} />
+            <Route path="messaging" element={<PrivateRoute roles={[]} children={<Messaging />} />} />
           </Routes>
         </KeycloakProvider>
       </ThemeProvider>
