@@ -182,6 +182,12 @@ export type UserCreate = {
     password: string;
 };
 
+export type UserPasswordUpdate = {
+    old_password: string;
+    new_password: string;
+    confirm_password: string;
+};
+
 export type UserResponse = {
     firstName: string;
     lastName: string;
@@ -458,6 +464,39 @@ export type UpdateUserApiV1UsersUserIdPutResponses = {
 };
 
 export type UpdateUserApiV1UsersUserIdPutResponse = UpdateUserApiV1UsersUserIdPutResponses[keyof UpdateUserApiV1UsersUserIdPutResponses];
+
+export type UpdateUserPasswordData = {
+    body: UserPasswordUpdate;
+    path: {
+        user_id: number;
+    };
+    query?: never;
+    url: '/api/v1/users/{user_id}/update-password';
+};
+
+export type UpdateUserPasswordErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorResponse;
+};
+
+export type UpdateUserPasswordError = UpdateUserPasswordErrors[keyof UpdateUserPasswordErrors];
+
+export type UpdateUserPasswordResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type GetAllBarbersApiV1BarbersGetData = {
     body?: never;
