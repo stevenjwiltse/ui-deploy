@@ -1,8 +1,9 @@
-import { Box } from "@mui/material";
-import { ReactNode } from "react";
+import { Alert, Box, Snackbar } from "@mui/material";
+import { ReactNode, useState } from "react";
 import Navbar, { NavItemsType } from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useKeycloak } from "../hooks/useKeycloak";
+import { SnackBarProvider } from "../context/SnackBarContext";
 
 type BaseProps = {
   children: ReactNode;
@@ -13,6 +14,7 @@ export default function Base({ children }: BaseProps) {
   if (!keycloak) {
     return null; // or handle loading state
   }
+
   const navItems: NavItemsType[] = [
     {
       name: "Home",

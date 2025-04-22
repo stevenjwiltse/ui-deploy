@@ -20,6 +20,7 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useKeycloak } from "../hooks/useKeycloak";
 import { useState } from "react";
 import { AccountCircle } from "@mui/icons-material";
+import { useNavigate } from "react-router";
 
 const StyledToolbar = styled(Toolbar)({
   display: "flex",
@@ -62,6 +63,8 @@ const Navbar = (props: Props) => {
     keycloak?.logout();
   };
 
+  const navigate = useNavigate();
+
   const { window } = props;
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -75,6 +78,11 @@ const Navbar = (props: Props) => {
   };
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
+  };
+
+  const handleNavigate = (path: string) => {
+    navigate(path);
+    handleCloseUserMenu();
   };
 
   const drawer = (
@@ -91,18 +99,29 @@ const Navbar = (props: Props) => {
             </ListItemButton>
           </ListItem>
         ))}
+         
         <Divider variant="middle" component="li" />
-        <ListItem disablePadding sx={{ display: { xs: 'flex', sm: 'none' } }}>
-          {authenticated ? (
-            <ListItemButton color="inherit" onClick={handleLogout} sx={{ textAlign: "center" }}>
-              <ListItemText primary="Sign Out" />
-            </ListItemButton>
-          ) : (
-            <ListItemButton color="inherit" onClick={handleLogin} sx={{ textAlign: "center" }}>
+       
+        {authenticated ? (
+          <Box>
+            <ListItem disablePadding>
+              <ListItemButton sx={{ textAlign: "center" }} onClick={() => handleNavigate("/profile")}>
+                <ListItemText primary="Profile" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLogout} sx={{ textAlign: "center" }}>
+                <ListItemText primary="Sign Out" />
+              </ListItemButton>
+            </ListItem>
+          </Box>
+        ) : (
+          <ListItem disablePadding>
+            <ListItemButton onClick={handleLogin} sx={{ textAlign: "center" }}>
               <ListItemText primary="Sign In / Sign Up" />
             </ListItemButton>
-          )}
-        </ListItem>
+          </ListItem>
+        )}
       </List>
     </Box>
   );
@@ -121,7 +140,7 @@ const Navbar = (props: Props) => {
             sx={{ width: { xs: 100, sm: 125, md: 150 } }}
           >
           </Box>
-          <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
+          <Box sx={{ display: { xs: 'none', sm: 'none', md: "block" } }}>
             {props.navItems.map((item) => (
               <Button key={item.name} sx={{ color: '#fff' }} href={item.link}>
                 {item.name}
@@ -130,8 +149,8 @@ const Navbar = (props: Props) => {
           </Box>
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, display: { xs: 'none', sm: 'flex' } }}>
-                {authenticated ? (<Typography color="#fff" marginRight={2}>Hello, {getUserName()}</Typography>) : ("") }<AccountCircle sx={{ color: '#fff' }} />
+              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, display: { xs: 'none', sm: 'none', md: "flex" } }}>
+                {authenticated ? (<Typography color="#fff" marginRight={2}>Hello, {getUserName()}</Typography>) : ("")}<AccountCircle sx={{ color: '#fff' }} />
               </IconButton>
             </Tooltip>
             <Menu
@@ -150,6 +169,15 @@ const Navbar = (props: Props) => {
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
             >
+              {authenticated ? (
+                <MenuItem onClick={() => handleNavigate("/profile")}>
+                  <Button color="inherit">
+                    Profile
+                  </Button>
+                </MenuItem>
+              ) : (
+                null
+              )}
               <MenuItem onClick={handleCloseUserMenu}>
                 {authenticated ? (
                   <Button color="inherit" onClick={handleLogout}>
@@ -168,7 +196,7 @@ const Navbar = (props: Props) => {
             aria-label="open drawer"
             edge="start"
             onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
+            sx={{ mr: 2, display: { sm: "block", md: "none" } }}
           >
             <MenuIcon />
           </IconButton>
@@ -185,7 +213,7 @@ const Navbar = (props: Props) => {
             keepMounted: true, // Better open performance on mobile.
           }}
           sx={{
-            display: { xs: "block", sm: "none" },
+            display: { xs: "block", sm: "block", md: "none" },
             "& .MuiDrawer-paper": {
               boxSizing: "border-box",
               width: drawerWidth,
