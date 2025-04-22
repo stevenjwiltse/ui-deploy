@@ -5,14 +5,13 @@ import {
   Card,
   CardContent,
   Stack,
-  TextField,
   Typography,
 } from "@mui/material";
 import { useKeycloak } from "../hooks/useKeycloak";
 import Base from "./Base";
 import PasswordField from "../components/PasswordField";
 import { SubmitHandler, useForm } from "react-hook-form";
-import { updateUserPassword, UserPasswordUpdate, UserUpdate } from "../api";
+import { updateUserPassword, UserPasswordUpdate } from "../api";
 import { useMe } from "../hooks/useMe";
 import { useSnackBar } from "../context/SnackBarContext";
 import { useNavigate } from "react-router";
@@ -54,13 +53,24 @@ export default function UpdatePassword() {
           user_id: user.user_id,
         }
       });
+      if (error) {
+        if (error.detail) {
+          if (error.detail === "Old password is incorrect") {
+            showSnackBar("Old password is incorrect", "error");
+          } else {
+            showSnackBar("Error updating password", "error");
+          }
+        } else {
+          showSnackBar("Error updating password", "error");
+        }
+        return;
+      }
       if (data) {
-        console.log("Password updated successfully", data);
         showSnackBar("Password updated successfully", "success");
         navigate("/profile");
       }
     } catch (err) {
-      console.error(`Unexpected error: ${err}`);
+      showSnackBar("Error updating password", "error");
     }
   };
 
