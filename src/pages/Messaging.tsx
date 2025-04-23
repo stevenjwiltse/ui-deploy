@@ -15,34 +15,21 @@ import Autocomplete from '@mui/material/Autocomplete';
 import Base from './Base';
 import { useKeycloak } from '../hooks/useKeycloak';
 import { useUserSearch, UserOption } from '../hooks/useUserSearch';
-
-interface MessageResponse {
-  message_id: number;
-  thread_id: number;
-  hasActiveMessage: boolean;
-  text: string;
-  timeStamp: string;
-}
-
-interface ThreadResponse {
-  thread_id: number;
-  receivingUser: number;
-  sendingUser: number;
-  messages: MessageResponse[];
-}
-
-interface UserResponse {
-  user_id: number;
-  firstName: string;
-  lastName: string;
-  email: string;
-}
+import { useMe } from '../hooks/useMe';
+import { MessageResponse, 
+         ThreadResponse, 
+         UserResponse,
+         getThreadsByUserIdApiV1ThreadsLoggedUserIdAndOtherUserIdGet,
+         getAllThreadsByUserIdApiV1ThreadsUserIdGet,
+         getUserApiV1UsersUserIdGet,
+         createThreadApiV1ThreadsPost,
+         createMessageApiV1MessagesPost 
+        } from "../api";
 
 export default function Messaging() {
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
   const { keycloak, authenticated } = useKeycloak();
-  const [userId, setUserId] = useState<number | null>(null);
   const [userMap, setUserMap] = useState<Record<number, UserResponse>>({});
   const [threads, setThreads] = useState<ThreadResponse[]>([]);
   const [activeThread, setActiveThread] = useState<ThreadResponse | null>(null);
@@ -54,118 +41,109 @@ export default function Messaging() {
   const [newMessageText, setNewMessageText] = useState('');
   const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Resolve user_id from /me endpoint using kc_id
-  const fetchUserId = async () => {
-    try {
-      const res = await fetch('http://localhost:8000/api/v1/users/me', {
-        headers: {
-          Authorization: `Bearer ${keycloak?.token}`,
-        },
-      });
-      if (!res.ok) {
-        console.error("Failed to resolve user info:", await res.text());
-        return;
-      }
-      const user: UserResponse = await res.json();
-      setUserId(user.user_id);
-    } catch (error) {
-      console.error("Error fetching user ID from /me:", error);
-    }
-  };
+  const { user } = useMe();
+  const userId = user?.user_id ?? null;
 
   //fetch user info by id
   const fetchUserInfo = async (userId: number) => {
     if (userMap[userId]) return; // already cached
   
     try {
-      const res = await fetch(`http://localhost:8000/api/v1/users/${userId}`, {
+      const { data, error } = await getUserApiV1UsersUserIdGet({
+        path: { user_id: userId },
         headers: {
           Authorization: `Bearer ${keycloak?.token}`
         }
       });
   
-      if (!res.ok) {
-        console.error(`Failed to fetch user ${userId}:`, await res.text());
+      if (error || !data) {
+        console.error(`Failed to fetch user ${userId}:`, error);
         return;
       }
   
-      const user: UserResponse = await res.json();
-      setUserMap((prev) => ({ ...prev, [userId]: user }));
-    } catch (error) {
-      console.error('Error fetching user info:', error);
+      setUserMap((prev) => ({ ...prev, [userId]: data }));
+    } catch (err) {
+      console.error(`Error fetching user ${userId}:`, err);
     }
   };
 
   // Fetch all threads for the resolved user_id
   const fetchThreads = async () => {
     if (!userId) return;
-
-    const url = `http://localhost:8000/api/v1/threads/${userId}`;
-
+  
     try {
-      const res = await fetch(url, {
+      const { data, error } = await getAllThreadsByUserIdApiV1ThreadsUserIdGet({
+        path: { user_id: userId },
         headers: {
-          Authorization: `Bearer ${keycloak?.token}`
+          Authorization: `Bearer ${keycloak?.token}`,
         }
       });
-
-      const raw = await res.text();
-      if (!res.ok) {
-        console.error("Failed to load threads:", raw);
+      
+      if (error || !data) {
+        console.error("Failed to fetch threads:", error);
         return;
       }
-
-      const data: ThreadResponse[] = JSON.parse(raw).map((thread: ThreadResponse) => ({
+      
+      const threads = data.map(thread => ({
         ...thread,
-        messages: thread.messages.sort(
+        messages: thread.messages?.sort(
           (a, b) => new Date(a.timeStamp).getTime() - new Date(b.timeStamp).getTime()
         )
       }));
-      setThreads(data);
-
-      // Fetch other users' info
+      
+      setThreads(threads);
+  
       const otherUserIds = data.map(t =>
         t.receivingUser === userId ? t.sendingUser : t.receivingUser
       );
       for (const id of new Set(otherUserIds)) {
         await fetchUserInfo(id);
       }
-
+  
       if (!activeThread && data.length > 0) {
         setActiveThread(data[0]);
       }
-
+  
       return data;
     } catch (error) {
-      console.error("Unexpected error fetching threads:", error);
+      console.error("Failed to load threads:", error);
     }
   };
 
   //Fetch Messages by page for the active thread
   const fetchMessages = async (page: number) => {
     if (!userId || !activeThread) return [];
-    const otherId = activeThread.receivingUser === userId ? activeThread.sendingUser: activeThread.receivingUser;
-    
-    const url = `http://localhost:8000/api/v1/threads/${userId}/and/${otherId}?page=${page}&limit=10`;
-    
-    const res = await fetch(url, {
-      headers: { Authorization: `Bearer ${keycloak?.token}` }
-    });
-    if (!res.ok) {
-      console.error('Failed to load messages:', await res.text());
+  
+    const otherId =
+      activeThread.receivingUser === userId
+        ? activeThread.sendingUser
+        : activeThread.receivingUser;
+  
+    try {
+      const { data, error } = await getThreadsByUserIdApiV1ThreadsLoggedUserIdAndOtherUserIdGet({
+        path: {
+          logged_user_id: userId,
+          other_user_id: otherId
+        },
+        query: {
+          page,
+          limit: 10
+        },
+        headers: { Authorization: `Bearer ${keycloak?.token}` }
+      });
+  
+      if (error || !data || data.length === 0) {
+        console.error("No messages found or error:", error);
+        return [];
+      }
+  
+      return data[0]?.messages?.slice().reverse() ?? [];
+    } catch (error) {
+      console.error("Failed to load messages:", error);
       return [];
     }
-    const data: ThreadResponse[] = await res.json();
-    // backend returns newest→oldest, so reverse to oldest→newest
-    return data[0]?.messages.slice().reverse() ?? [];
   };
-
-  useEffect(() => {
-    if (authenticated) {
-      fetchUserId(); // First, get user_id
-    }
-  }, [authenticated]);
-
+    
   useEffect(() => {
     if (userId) {
       fetchThreads(); // Then load threads
@@ -206,24 +184,23 @@ export default function Messaging() {
 
   const handleCreateThread = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedUser || selectedUser.user_id === userId) return;
-
-    const res = await fetch('http://localhost:8000/api/v1/threads', {
-      method: 'POST',
+    if (!selectedUser || !userId || selectedUser.user_id === userId) return;
+  
+    const { data: created, error } = await createThreadApiV1ThreadsPost({
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${keycloak?.token}`
       },
-      body: JSON.stringify({
+      body: {
         sendingUser: userId,
         receivingUser: selectedUser.user_id
-      })
+      }
     });
-    if (!res.ok) {
-      console.error('Failed to create thread:', await res.text());
+  
+    if (error || !created) {
+      console.error('Failed to create thread:', error);
       return;
     }
-    const created: ThreadResponse = await res.json();
+  
     await fetchThreads();
     setActiveThread(created);
     setSelectedUser(null);
@@ -233,25 +210,25 @@ export default function Messaging() {
   //send message, then reload page 1 of messages (newest)
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (!activeThread || !newMessageText.trim()) return;
-
-    const res = await fetch('http://localhost:8000/api/v1/messages', {
-      method: 'POST',
+    if (!activeThread || !newMessageText.trim() || !userId) return;
+  
+    // The API request body matches the MessageCreate type
+    const res = await createMessageApiV1MessagesPost({
       headers: {
-        'Content-Type': 'application/json',
         Authorization: `Bearer ${keycloak?.token}`
       },
-      body: JSON.stringify({
+      body: {
         thread_id: activeThread.thread_id,
-        hasActiveMessage: false,
+        hasActiveMessage: false, // You can update this flag as necessary
         text: newMessageText.trim()
-      })
+      }
     });
-    if (!res.ok) {
-      console.error('Failed to send message:', await res.text());
+  
+    if (res.error || !res.data) {
+      console.error('Failed to send message:', res.error);
       return;
     }
-
+  
     setNewMessageText('');
     // reload newest messages
     fetchMessages(1).then((msgs) => {
@@ -323,8 +300,8 @@ export default function Messaging() {
                     thread.receivingUser === userId
                       ? thread.sendingUser
                       : thread.receivingUser;
-                  const lastMsg = thread.messages.length
-                    ? thread.messages[thread.messages.length - 1].text
+                  const lastMsg = thread.messages?.length
+                    ? thread.messages[thread.messages?.length - 1].text
                     : '— no messages —';
 
                   return (
