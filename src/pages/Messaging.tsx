@@ -208,34 +208,34 @@ export default function Messaging() {
   };
 
   //send message, then reload page 1 of messages (newest)
-  const handleSendMessage = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!activeThread || !newMessageText.trim() || !userId) return;
-  
-    // The API request body matches the MessageCreate type
-    const res = await createMessageApiV1MessagesPost({
-      headers: {
-        Authorization: `Bearer ${keycloak?.token}`
-      },
-      body: {
-        thread_id: activeThread.thread_id,
-        hasActiveMessage: false, // You can update this flag as necessary
-        text: newMessageText.trim()
-      }
-    });
-  
-    if (res.error || !res.data) {
-      console.error('Failed to send message:', res.error);
-      return;
+const handleSendMessage = async (e: FormEvent) => {
+  e.preventDefault();
+  if (!activeThread || !newMessageText.trim() || !userId) return;
+
+  // The API request body matches the MessageCreate type
+  const res = await createMessageApiV1MessagesPost({
+    headers: {
+      Authorization: `Bearer ${keycloak?.token}`
+    },
+    body: {
+      thread_id: activeThread.thread_id,
+      hasActiveMessage: false, // You can update this flag as necessary
+      text: newMessageText.trim()
     }
-  
-    setNewMessageText('');
-    // reload newest messages
-    fetchMessages(1).then((msgs) => {
-      setMessages(msgs);
-      setMessagePage(1);
-    });
-  };
+  });
+
+  if (res.error || !res.data) {
+    console.error('Failed to send message:', res.error);
+    return;
+  }
+
+  setNewMessageText('');
+  // reload newest messages
+  fetchMessages(1).then((msgs) => {
+    setMessages(msgs);
+    setMessagePage(1);
+  });
+};
 
   return (
     <Base>
@@ -352,7 +352,7 @@ export default function Messaging() {
                   sx={{ flex: 1, overflowY: 'auto', minHeight: 0, maxHeight: '100%', mb: 2 }}
                 >
                   {messages.map((msg) => {
-                    const isOwn = msg.hasActiveMessage;
+                    const isOwn = activeThread && msg.hasActiveMessage === (activeThread.sendingUser === userId);
                     return (
                       <Box
                         key={msg.message_id}
