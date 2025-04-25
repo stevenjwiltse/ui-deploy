@@ -13,7 +13,7 @@ import PasswordField from "../components/PasswordField";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { updateUserPassword, UserPasswordUpdate } from "../api";
 import { useMe } from "../hooks/useMe";
-import { useSnackBar } from "../context/SnackBarContext";
+import { useSnackBar } from "../context/SnackbarContext";
 import { useNavigate } from "react-router";
 
 export default function UpdatePassword() {

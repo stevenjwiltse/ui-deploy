@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 import Navbar, { NavItemsType } from "../components/Navbar";
 import Footer from "../components/Footer";
 import { useKeycloak } from "../hooks/useKeycloak";
-import { SnackBarProvider } from "../context/SnackBarContext";
+import { SnackBarProvider } from "../context/SnackbarContext";
 
 type BaseProps = {
   children: ReactNode;

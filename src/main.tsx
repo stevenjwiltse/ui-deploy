@@ -16,12 +16,12 @@ import Booking from './pages/Booking';
 import AppointmentConfirmation from './pages/AppointmentConfirmation';
 import { MeProvider } from './context/MeContext';
 import ProfileInfo from './pages/ProfileInfo';
-import { SnackBarProvider } from './context/SnackBarContext';
+import { SnackBarProvider } from './context/SnackbarContext';
 import UpdatePassword from './pages/UpdatePassword';
 
 
 ReactDOM.createRoot(document.getElementById('root')!).render( 
-  
+
   <React.StrictMode>
     <BrowserRouter>
       <ThemeProvider theme={theme}>

@@ -5,7 +5,7 @@ import { useKeycloak } from "../hooks/useKeycloak";
 import { useMe } from "../hooks/useMe";
 import { useNavigate } from "react-router";
 import Base from "./Base";
-import { useSnackBar } from "../context/SnackBarContext";
+import { useSnackBar } from "../context/SnackbarContext";
 
 
 export default function ProfileInfo() {
