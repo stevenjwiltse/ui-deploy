@@ -1,15 +1,20 @@
+version: '3.8'
+
 services:
   barber-shop-ui:
-    image: node:22-alpine
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: barber-shop-ui
     ports:
       - "5173:5173"
-    working_dir: /app
     volumes:
-      - ./:/app
-    env_file:
-      - .env
-    command: "npm run dev"
+      - .:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - barber-shop-network
 
 networks:
   barber-shop-network:

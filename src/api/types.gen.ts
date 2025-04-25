@@ -1290,5 +1290,5 @@ export type RootHealthzGetResponses = {
 };
 
 export type ClientOptions = {
-    baseUrl: 'http://localhost:8000' | (string & {});
+    baseUrl: 'http://18.220.221.175:8000' | (string & {});
 };
