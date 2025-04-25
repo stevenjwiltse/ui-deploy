@@ -182,6 +182,15 @@ export default function Messaging() {
     }
   }, [threads]);
 
+  useEffect(() => {
+    if (!activeThread) return;
+    const interval = setInterval(() => {
+      fetchMessages(messagePage).then(setMessages);
+    }, 5000); // every 5s, adjust as you like
+  
+    return () => clearInterval(interval);
+  }, [activeThread, messagePage]);
+
   const handleCreateThread = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedUser || !userId || selectedUser.user_id === userId) return;
@@ -220,7 +229,8 @@ const handleSendMessage = async (e: FormEvent) => {
     body: {
       thread_id: activeThread.thread_id,
       hasActiveMessage: false, // You can update this flag as necessary
-      text: newMessageText.trim()
+      text: newMessageText.trim(),
+      sender_id: userId!
     }
   });
 
@@ -352,12 +362,12 @@ const handleSendMessage = async (e: FormEvent) => {
                   sx={{ flex: 1, overflowY: 'auto', minHeight: 0, maxHeight: '100%', mb: 2 }}
                 >
                   {messages.map((msg) => {
-                    const isOwn = activeThread && msg.hasActiveMessage === (activeThread.sendingUser === userId);
+                    const isOwn = msg.sender_id === userId;
                     return (
                       <Box
                         key={msg.message_id}
                         display="flex"
-                        justifyContent={isOwn ? 'flex-start' : 'flex-end'}
+                        justifyContent={isOwn ? 'flex-end' : 'flex-start'}
                         mb={1}
                       >
                         <Box

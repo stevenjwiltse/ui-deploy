@@ -64,12 +64,14 @@ export type MessageCreate = {
     thread_id: number;
     hasActiveMessage: boolean;
     text: string;
+    sender_id: number;
 };
 
 export type MessageResponse = {
     thread_id: number;
     hasActiveMessage: boolean;
     text: string;
+    sender_id: number;
     message_id: number;
     timeStamp: string;
 };
@@ -357,6 +359,46 @@ export type GetCurrentUserApiV1UsersMeGetResponses = {
 };
 
 export type GetCurrentUserApiV1UsersMeGetResponse = GetCurrentUserApiV1UsersMeGetResponses[keyof GetCurrentUserApiV1UsersMeGetResponses];
+
+export type SearchUsersApiV1UsersSearchGetData = {
+    body?: never;
+    path?: never;
+    query: {
+        /**
+         * Search term for username
+         */
+        q: string;
+        page?: number;
+        limit?: number;
+    };
+    url: '/api/v1/users/search';
+};
+
+export type SearchUsersApiV1UsersSearchGetErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorResponse;
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorResponse;
+};
+
+export type SearchUsersApiV1UsersSearchGetError = SearchUsersApiV1UsersSearchGetErrors[keyof SearchUsersApiV1UsersSearchGetErrors];
+
+export type SearchUsersApiV1UsersSearchGetResponses = {
+    /**
+     * Successful Response
+     */
+    200: Array<UserResponse>;
+};
+
+export type SearchUsersApiV1UsersSearchGetResponse = SearchUsersApiV1UsersSearchGetResponses[keyof SearchUsersApiV1UsersSearchGetResponses];
 
 export type DeleteUserApiV1UsersUserIdDeleteData = {
     body?: never;
